@@ -301,6 +301,8 @@ def preprocess_abx_data(project_path_obj,
   # extract timestemp for order entries
   abx_df['startdate'] =  pd.to_datetime(abx_df['startdate']).dt.date
   abx_df['enddate'] =  pd.to_datetime(abx_df['enddate']).dt.date
+  abx_df['adm_date'] = pd.to_datetime(abx_df['adm_date']).dt.date
+  abx_df['disch_date'] = pd.to_datetime(abx_df['disch_date']).dt.date
   abx_df = abx_df.drop_duplicates(['hadm_id', 'startdate', 'enddate', 'drug'])
   num_qualifying_antibiotic = abx_df.shape[0]
   print("#of qualifying antibiotic order entries: ", num_qualifying_antibiotic)
