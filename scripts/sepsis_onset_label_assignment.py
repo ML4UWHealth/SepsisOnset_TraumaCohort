@@ -586,6 +586,8 @@ def organ_dysfunction(day, sofa):
     """
     # Filter SOFA scores within the 7-day window around the specified day
     sofa_7day_window_df = sofa[sofa.sofa_day.between(day - 3, day + 3, inclusive='both')].reset_index().rename({'index': 'sofa_index'}, axis=1)
+    if sofa_7day_window_df['sofa_24hours'].dtype != 'int64':
+        sofa_7day_window_df['sofa_24hours'] = sofa_7day_window_df['sofa_24hours'].astype('int64')
     sofa_7day_window_values = sofa_7day_window_df.sofa_24hours.values
 
     # Compute pairwise differences between SOFA scores
