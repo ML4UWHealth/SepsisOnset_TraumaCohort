@@ -640,7 +640,7 @@ def vital_signs_sql2df(project_id, saved_path=None):
   """
   vs_df = run_query(vs_query, project_id)
   if saved_path != None:
-    vs_df.to_csv(os.path.join(saved_path, "pivot_vital.csv"))
+    vs_df.to_csv(saved_path)
   return vs_df
 
 
