@@ -22,6 +22,8 @@ import time
 from datetime import datetime, time, date, timedelta
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold
+
 
 
 from src.data import data_utils, sql2df
@@ -375,109 +377,95 @@ def instance_construction(project_path_obj, project_id, trum_cohort_info_df, is_
 
 """
 # 3. Data Split
+The function ensures a fair and structured data split for evaluation, using a **5-fold stratified split** (by default):  
 
-The requirements for data splitting to ensure fair test evaluation and prevent data leakage:
-1. **Exclusive Subject IDs**: A subject ID will not appear in both the training and test datasets.
-2. **Stratified Split**: The split is stratified to ensure that both training and validation datasets have similar positive instance ratios.
-3. **Consistent Instances**: Datasets with and without missing values should share the same instances (i.e., from the same patient at the same time). In other words, they should have the same test dataset size.
+1. **Patient-Level Splitting**: Each patient (`subject_id`) is assigned to a single fold, preventing data leakage across folds.
+2. **Stratified Split**: The split maintains the same sepsis prevalence across folds to ensure a balanced distribution of positive and negative cases.
+3. **Fold Assignment**: Patients are grouped by subject ID, and a `Fold` column is added to indicate fold assignments.   
+
+**Note**: For fair comparison, this pre-defined split should be used in all experiments. The corresponding file is already stored in the GitHub repository:  
+📁 `SepsisOnset_TraumaCohort/dataset/Fold_IDs.csv`
+The following function details how this file is constructed.
 """
-def split_and_report_data(data_with_nan, data_wo_nan, project_path_obj, is_saved=True, is_report=True):
+def stratified_patient_split(patient_df, n_splits=5, random_state=42, is_report=True, is_saved=True):
     """
-    Splits data into training and test sets while maintaining a balanced representation of sepsis and non-sepsis patients.
-    Reports statistics on the split datasets if requested.
+    Performs stratified 5-fold cross-validation at the patient (subject) level
+    and stores dataset statistics for each fold.
 
-    Parameters:
-    -----------
-    data_with_nan : pandas.DataFrame
-        DataFrame containing data with NaN values.
-    data_wo_nan : pandas.DataFrame
-        DataFrame containing data with NaN values filled.
-    project_path_obj:
-        Object containing paths to save the dataset.
-    is_saved : bool, optional
-        If True, saves the split datasets. Default is True.
-    isReport : bool, optional
-        If True, generates and displays a report on the split datasets. Default is True.
+    Parameters
+    ----------
+    dataset : pandas.DataFrame
+        A DataFrame containing:
+        - 'subject_id': Unique patient identifier.
+        - 'Label': Binary label indicating sepsis presence (0 or 1).
+        - Other relevant patient-level features.
 
-    Returns:
-    --------
-    tuple of pandas.DataFrame
-        Two DataFrames: data_with_nan and data_wo_nan with updated dataset labels.
+    n_splits : int, optional
+        Number of stratified folds for cross-validation (default: 5).
+
+    random_state : int, optional
+        Random seed for reproducibility (default: 42).
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing dataset statistics per fold, including:
+        - 'Samples': Number of samples per subset (train, val, test).
+        - 'Patients': Number of unique patients per subset.
+        - 'Imbalance Ratio': Ratio of positive to negative cases in each subset.
+
+    Notes
+    -----
+    - The function aggregates labels at the patient level by taking the max Label per subject.
+    - StratifiedKFold ensures each fold maintains the same sepsis prevalence as the entire dataset.
+    - Calls `split_train_val_test()` to generate patient-level splits.
+    - Calls `store_fold_statistics()` to record dataset statistics.
+
+    Example
+    -------
+    ```python
+    fold_info_df = stratified_patient_split(dataset)
+    ```
     """
+    # Define Stratified 5-Fold Cross-Validation for patient-level split
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
 
-    # Count records per patient in datasets with and without NaN values
-    count_df_wo_nan = data_wo_nan.groupby(['subject_id', 'hadm_id']).agg({"Night": 'count', 'Label': 'max'}).reset_index()
-    count_df_with_nan = data_with_nan.groupby(['subject_id', 'hadm_id']).agg({"Night": 'count', 'Label': 'max'}).reset_index()
+    for fold, (train_val_idx, test_idx) in enumerate(skf.split(patient_df, patient_df.Label)):
+        # Get subject-level train-validation data
+        test_subjects = patient_df.iloc[test_idx]['subject_id']
+        patient_df.loc[patient_df.subject_id.isin(test_subjects), 'Fold'] = int(fold)
 
-    # Merge counts to find patients with the same records in both datasets
-    count_df = count_df_with_nan.merge(count_df_wo_nan, on=['subject_id', 'hadm_id'], how='outer', suffixes=('_with_nan', '_wo_nan'))
-    test_candidates = count_df[count_df.Night_with_nan == count_df.Night_wo_nan]
-
-    print(f"Got {test_candidates.shape[0]} test candidates (same records should be in both tables).")
-
-    # Split test candidates into training and test sets
-    test_candidates = test_candidates.groupby(['subject_id']).agg({'Label_wo_nan': 'max'}).reset_index()
-    test_candidates.rename(columns={'Label_wo_nan': 'label'}, inplace=True)
-    test_size_wo_nan = int(0.2 * test_candidates.shape[0])
-
-    id_train, id_test, label_train, label_test = train_test_split(
-        test_candidates.subject_id, test_candidates.label,
-        random_state=8, test_size=test_size_wo_nan, shuffle=True,
-        stratify=test_candidates.label
-    )
-
-    # Assign dataset labels
-    data_wo_nan.loc[:, 'Dataset'] = 'train'
-    data_wo_nan.loc[data_wo_nan.subject_id.isin(id_test), 'Dataset'] = 'test'
-    # data_wo_nan.Dataset.fillna('train')
-    data_with_nan.loc[:, 'Dataset'] = 'train'
-    data_with_nan.loc[data_with_nan.subject_id.isin(id_test), 'Dataset'] = 'test'
-    # data_with_nan.Dataset.fillna('train')
-
-    # Report statistics
+    # Statistics Report
     if is_report:
-        for name, df in {"with NaN": data_with_nan, "w/o NaN": data_wo_nan}.items():
-            print(f"For data table {name} with shape {df.shape} for {df.hadm_id.nunique()} patients(hadm_id).")
-            report_df = pd.DataFrame(columns=['NumInstance', 'NumPosInstance', 'RatioPosInstance', 'NumPatient(subject_id)', 'NumSepPatient(subject_id)', 'RatioSepPatient(subject_id)'],
-                                     index=['test', 'train'])
+      fold_info_df = patient_df.groupby('Fold').agg({
+          'subject_id':['nunique'],
+          'Label': ['sum']}).reset_index()
+      # fold_info_df['Imbalance Ratio'] = (fold_info_df[('Label', 'sum')]/ fold_info_df[('subject_id', 'nunique')]).round(3)
+      fold_info_df.columns = ['Fold', 'NumPatients', 'NumPosPatients']
+      display(fold_info_df)
 
-            # Instance-level counts
-            test_0, test_1, train_0, train_1 = df.groupby(['Dataset', 'Label']).size()
-            report_df.loc[:, ['NumInstance', 'NumPosInstance', 'RatioPosInstance']] = [
-                [test_0 + test_1, test_1, round(test_1 / (test_0 + test_1), 3)],
-                [train_0 + train_1, train_1, round(train_1 / (train_0 + train_1), 3)]
-            ]
-
-            # Patient-level counts
-            test_0, test_1, train_0, train_1 = df.groupby(['Dataset', 'subject_id']).Label.max().reset_index().groupby(['Dataset', 'Label']).size()
-            report_df.loc[:, ['NumPatient(subject_id)', 'NumSepPatient(subject_id)', 'RatioSepPatient(subject_id)']] = [
-                [test_0 + test_1, test_1, round(test_1 / (test_0 + test_1), 3)],
-                [train_0 + train_1, train_1, round(train_1 / (train_0 + train_1), 3)]
-            ]
-            # print(f"Patient-level (subject_id) counts:")
-            display(report_df)
-
-    # Save datasets
     if is_saved:
-      print(f"Saving datasets to {project_path_obj.dataset_with_nan_path}")
-      data_with_nan.to_pickle(project_path_obj.dataset_with_nan_path)
-      print(f"Saving datasets to {project_path_obj.dataset_wo_nan_path}")
-      data_wo_nan.to_pickle(project_path_obj.dataset_wo_nan_path)
-    return data_with_nan, data_wo_nan
+      patient_df[['subject_id', 'Fold']].to_csv(project_path_obj.fold_patient_info_path)
+
+    return patient_df[['subject_id', 'Fold']]
+
+# # Aggregate Label to the patient (subject) level
+# patient_df = data_with_nan.groupby('subject_id').Label.max().reset_index()
+# patient_df = stratified_patient_split(patient_df, n_splits=5, random_state=42, is_saved=False)
 
 
-"""
-# Integration and Execution Dataset Construction
-"""
-def dataset_construction(project_path_obj, project_id, is_report=True):
+def dataset_construction(project_path_obj, project_id, is_report=True, is_saved=True):
     """
-    Generates and saves 2 datasets: one with NaN values filled and one with NaN values.
+    Constructs and saves two datasets:
+    - One with NaN values retained.
+    - One with NaN values filled.
+
     Each dataset contains the following columns:
     - Temporal Features: Multivariate time-series input data with shape (# of timestamps, # of features).
-    - Label: 0/1, representing the output label.
-    - Dataset: Indicates whether this instance is part of the training or test dataset.
-    
-    Each row represents one nighttime instance, which is associated with patient IDs ('subject_id', 'hadm_id') and timestamp ID (Night).
+    - Label: Binary (0/1) indicating the output class.
+    - Dataset: Indicates whether this instance belongs to the training or test set.
+
+    Each row represents a nighttime instance, associated with patient identifiers (`subject_id`, `hadm_id`) and a timestamp (`Night`).
 
     Parameters:
     -----------
@@ -485,44 +473,100 @@ def dataset_construction(project_path_obj, project_id, is_report=True):
         Provides paths to processed data files.
     project_id : str
         Project identifier for BigQuery database access.
-    trauma_cohort_info_df : DataFrame
-        DataFrame containing trauma cohort ids and their corresponding hospital admission information of trauma patients.
     is_report : bool, optional (default=True)
-        If True, enables printing of summary statistics for the datasets.
+        If True, generates and prints dataset statistics.
+    is_saved : bool, optional (default=True)
+        If True, saves the generated datasets.
 
     Returns:
     --------
-    tuple of DataFrames
-        - DataFrame with NaN values.
-        - DataFrame without NaN values.
+    tuple of DataFrames:
+        - DataFrame containing NaN values.
+        - DataFrame with NaN values filled.
     """
-    # Load Trauma Cohort
-    # Detailed explanations of the cohort extraction process can be found in the `notebooks/cohort_extraction.ipynb` file.
-    if os.path.exists(project_path_obj.trauma_cohort_info_path):
-        # Load the existing file
-        trum_ids = pd.read_csv(project_path_obj.trauma_cohort_info_path, index_col=0)
+
+    # Check if both datasets already exist
+    if os.path.exists(project_path_obj.dataset_with_nan_path) and os.path.exists(project_path_obj.dataset_wo_nan_path):
+        print("Both datasets already exist. Skipping dataset construction and loading existing files.")
+
+        # Load the datasets
+        data_with_nan_df = pd.read_pickle(project_path_obj.dataset_with_nan_path)
+        data_wo_nan_df = pd.read_pickle(project_path_obj.dataset_wo_nan_path)
+
     else:
-        # File does not exist, extract cohort IDs and generate statistics report
-        trum_ids = extract_trauma_cohort_ids(project_path_obj,    # Saved file paths
-                                             project_id,          # To query raw data
-                                             is_report=False,     # Print statistics report
-                                             is_saved=True        # Save the cohort IDs
-                                            )
-    # This table should contain the hospital admission IDs (hadm_id) of trauma patients and the corresponding admission information.
-    # 1 row per patient
-    trauma_cohort_info_df = trum_ids[['subject_id', 'hadm_id', 'icustay_id', 'admittime']]
-    
-    # Generate dataset without NaN values
-    print("Generating Dataset without NaN values...")
-    data_wo_nan = instance_construction(project_path_obj, project_id, trauma_cohort_info_df, is_fill=True, is_report=is_report)
-    
-    # Generate dataset with NaN values
-    print("\nGenerating Dataset with NaN values...")
-    data_with_nan = instance_construction(project_path_obj, project_id, trauma_cohort_info_df, is_fill=False, is_report=is_report)
-    
-    # Split, save, and report data
-    data_with_nan_df, data_wo_nan_df = split_and_report_data(data_with_nan.copy(), data_wo_nan.copy(), project_path_obj, is_saved=False, is_report=is_report)
-    
+        print("Generating datasets...")
+
+        # Load Trauma Cohort
+        # Detailed explanations of the cohort extraction process can be found in `notebooks/cohort_extraction.ipynb`.
+        if os.path.exists(project_path_obj.trauma_cohort_info_path):
+            # Load the existing file
+            trauma_ids = pd.read_csv(project_path_obj.trauma_cohort_info_path, index_col=0)
+        else:
+            # File does not exist, extract cohort IDs and generate statistics report
+            trauma_ids = extract_trauma_cohort_ids(project_path_obj, project_id, is_report=False, is_saved=True)
+
+        # Extract necessary columns from trauma cohort data
+        trauma_cohort_info_df = trauma_ids[['subject_id', 'hadm_id', 'icustay_id', 'admittime']]
+
+        # Load patient fold assignment
+        patient_df = pd.read_csv(project_path_obj.fold_patient_info_path, index_col=0, dtype=int)
+
+        # Generate dataset with NaN values
+        print("\nGenerating N Dataset (with NaN values)...")
+        data_with_nan = instance_construction(project_path_obj, project_id, trauma_cohort_info_df, is_fill=False, is_report=is_report)
+        # Assign fold ID
+        data_with_nan_df = data_with_nan.merge(patient_df, on='subject_id', how='left')
+
+        # Generate dataset without NaN values
+        print("Generating S Dataset (without NaN values)...")
+        data_wo_nan = instance_construction(project_path_obj, project_id, trauma_cohort_info_df, is_fill=True, is_report=is_report)
+        # Retain only the instances in `data_wo_nan` that are also present in `data_with_nan` (to ensure consistency)
+        data_wo_nan = data_wo_nan[data_wo_nan.index.isin(data_with_nan.index)]
+        # Assign fold ID
+        data_wo_nan_df = data_wo_nan.merge(patient_df, on='subject_id', how='left')
+
+        # Save datasets if required
+        if is_saved:
+            print(f"Saving datasets to {project_path_obj.dataset_with_nan_path}...")
+            data_with_nan_df.to_pickle(project_path_obj.dataset_with_nan_path)
+            print(f"Saving datasets to {project_path_obj.dataset_wo_nan_path}...")
+            data_wo_nan_df.to_pickle(project_path_obj.dataset_wo_nan_path)
+
+    # Calculate statistics per fold
+    if is_report:
+        for name, df in {"N dataset": data_with_nan_df, "S dataset": data_wo_nan_df}.items():
+            print(f"\nDataset: {name} | Shape: {df.shape} | Unique Patients (hadm_id): {df.hadm_id.nunique()}")
+
+            # Initialize statistics report
+            report_df = pd.DataFrame(
+                columns=['NumInstance', 'NumPosInstance', 'RatioPosInstance', 'NumPatient(subject_id)',
+                         'NumSepPatient(subject_id)', 'RatioSepPatient(subject_id)'],
+                index=['test', 'train']
+            )
+
+            # Compute fold statistics
+            fold_stats = df.groupby('Fold')['Label'].agg(
+                Total_Instances='count',
+                Positive_Instances=lambda x: (x == 1).sum(),
+                Negative_Instances=lambda x: (x == 0).sum()
+            ).reset_index()
+
+            # Calculate imbalance ratio (pos/total)
+            fold_stats['Imbalance_Ratio'] = fold_stats['Positive_Instances'] / fold_stats['Total_Instances']
+
+            # Add total row
+            total_row = {
+                'Fold': 'Total',
+                'Total_Instances': fold_stats['Total_Instances'].sum(),
+                'Positive_Instances': fold_stats['Positive_Instances'].sum(),
+                'Negative_Instances': fold_stats['Negative_Instances'].sum(),
+                'Imbalance_Ratio': fold_stats['Positive_Instances'].sum() / fold_stats['Total_Instances'].sum()
+            }
+            fold_stats = pd.concat([fold_stats, pd.DataFrame([total_row])], ignore_index=True)
+
+            display(fold_stats)
+
     return data_with_nan_df, data_wo_nan_df
+
 # Example usage
-# data_with_nan_df, data_wo_nan_df = dataset_construction(project_path_obj, PROJECT_ID, is_report=True)
+data_with_nan_df, data_wo_nan_df = dataset_construction(project_path_obj, PROJECT_ID, is_report=True)
