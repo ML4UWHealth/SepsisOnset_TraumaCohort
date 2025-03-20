@@ -14,7 +14,7 @@ To support future studies using this dataset, the project is structured into **t
 
 ### **Section 0: Verify MIMIC-III Dataset Access**  
 
-If you **do not have access**, please refer to [`notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb`]([notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb](https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S0_MIMIC-III%20Data%20Access%20Instructions.ipynb)) for detailed setup instructions.  
+If you **do not have access**, please refer to [`notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb`](https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S0_MIMIC-III%20Data%20Access%20Instructions.ipynb) for detailed setup instructions.  
 
 If you **believe you have access** to **MIMIC-III v1.4** via **Google BigQuery**, you can quickly verify it using the following code:  
 
