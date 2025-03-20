@@ -182,7 +182,7 @@ Display descriptive statistics for the onset day
 
 ### **Section 3: Generate Dataset**  
 
-This section loads the **Post-Traumatic Sepsis dataset** (without missing values), derived from **MIMIC-III v1.4**. For a detailed explanation of dataset construction, refer to [`notebooks/S3_Early_Sepsis_Onset_Detection_Setup.ipynb`]((https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S3_Early_Sepsis_Onset_Detection_Setup.ipynb)).  
+This section loads the **Post-Traumatic Sepsis dataset** (without missing values), derived from **MIMIC-III v1.4**. For a detailed explanation of dataset construction, refer to [`notebooks/S3_Early_Sepsis_Onset_Detection_Setup.ipynb`](https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S3_Early_Sepsis_Onset_Detection_Setup.ipynb).  
 
 The dataset consists of the following columns:  
 
