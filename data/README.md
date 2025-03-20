@@ -34,8 +34,12 @@ This repository **is initialized as empty** and will store **intermediate files*
 | `processed/` | `sofa_score.csv`         | Modified SOFA (Sequential Organ Failure Assessment) score | `SOFA_calculate`[^1] |
 | `processed/` | `trauma_sofa_score.csv`   | SOFA scores for the trauma cohort | `calculate_sofa_score`[^3] |
 | `processed/` | `sepsis_label.csv`        | Sepsis onset labels for the trauma cohort | `assign_sepsis_labels`[^3] |
+| `raw/` | `pivoted_vital.csv`          | Extracted vital sign data, including heart rate, blood pressure, and temperature | `extract_trauma_vitalsign`[^4] |
+| `raw/` | `pivoted_fio2.csv`          | Extracted FiO2(Fraction of Inspired Oxygen) levels| `extract_trauma_vitalsign`[^4] |
+
 
 File Location: 
 [^1]: **../src/data/sql2df.py** – SQL-to-DataFrame conversion scripts.  
-[^2]: **../scripts/cohort_extraction** – Scripts for extracting trauma cohort information.  
+[^2]: **../scripts/cohort_extraction** – Scripts for extracting trauma cohort information. 
 [^3]: **../scripts/epsis_onset_label_assignment** – Scripts for assigning sepsis labels and related processing.  
+[^4]: **../scripts/early_sepsis_onset_detection_setup** – Scripts for extracting features and constructing the dataset for early sepsis onset detection.

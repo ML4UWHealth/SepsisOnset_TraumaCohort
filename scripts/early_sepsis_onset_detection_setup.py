@@ -60,7 +60,7 @@ def extract_trauma_vitalsign(project_path_obj, project_id,
         - pivoted_fio2.sql: Specifically extracts FiO2 levels [View Script](https://github.com/MIT-LCP/mimic-code/blob/main/mimic-iii/concepts/pivot/pivoted_fio2.sql)
     """
     # Load vital signs data
-    path = project_path_obj.get_processed_data_file("pivoted_vital.csv")
+    path = project_path_obj.get_raw_data_file("pivoted_vital.csv")
     if os.path.exists(path):
         vital_df = pd.read_csv(path, index_col=0)
     else:
@@ -73,7 +73,7 @@ def extract_trauma_vitalsign(project_path_obj, project_id,
         vital_df.to_csv(path)
 
     # Load FiO2 data
-    path = project_path_obj.get_processed_data_file("pivoted_fio2.csv")
+    path = project_path_obj.get_raw_data_file("pivoted_fio2.csv")
     if os.path.exists(path):
         fio2_df = pd.read_csv(path, index_col=0)
     else:
