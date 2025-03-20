@@ -11,7 +11,7 @@ class ProjectPaths:
         # dataset folder:
         self.final_dataset_path = os.path.join(self.base_path, 'dataset')
         # patient ids fold assignments for stratified 5-fold CV at the patient level.
-        project_path_obj.fold_patient_info_path = os.path.join(project_path_obj.final_dataset_path, 'Fold_IDs.csv')
+        project_path_obj.fold_patient_info_path = os.path.join(self.final_dataset_path, 'Fold_IDs.csv')
         # dataset with nan value
         self.dataset_with_nan_path = os.path.join(self.final_dataset_path, 'PostTraumaticSepsis_dataset_w_nan.pkl')
         # dataset w/o nan value
