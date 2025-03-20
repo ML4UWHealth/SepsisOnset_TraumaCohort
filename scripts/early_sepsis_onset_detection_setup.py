@@ -568,5 +568,5 @@ def dataset_construction(project_path_obj, project_id, is_report=True, is_saved=
 
     return data_with_nan_df, data_wo_nan_df
 
-# Example usage
-data_with_nan_df, data_wo_nan_df = dataset_construction(project_path_obj, PROJECT_ID, is_report=True)
+## Example usage
+#data_with_nan_df, data_wo_nan_df = dataset_construction(project_path_obj, PROJECT_ID, is_report=True)
