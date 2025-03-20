@@ -317,11 +317,11 @@ def preprocess_abx_data(project_path_obj,
   # fillter
   new_abx_df = new_abx_df[new_abx_df.abx_day > 1]
   new_abx_df['abx_day'] = new_abx_df.abx_day.astype(int)
-  print("After droped 1st day antibiotic events:", new_abx_df.shape)
+  print("After dropped 1st day antibiotic events:", new_abx_df.shape)
 
   # 4. Antibiotic Duration Criteria: for at least 4 days or until death or until discharge
   new_abx_df = filter_duration_criteria(new_abx_df)
-  print("After filter the duration criteria:", new_abx_df.shape)
+  print("After filtering the duration criteria:", new_abx_df.shape)
 
   # Sort and reset index(index from 1 instead of 0)
   new_abx_df = new_abx_df.sort_values(['hadm_id','startdate']).reset_index(drop=True)
