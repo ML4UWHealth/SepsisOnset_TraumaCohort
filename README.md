@@ -4,7 +4,7 @@ This repository provides a **standardized dataset for early sepsis onset detecti
   
 The implementation is **primarily in Python**, with some SQL queries, and follows the methodology described in the paper *"Rare Event Early Detection: Sepsis Onset for Critically Ill Trauma Patients."* This project leverages **Google BigQuery** for efficient access and management of the MIMIC-III database.  
 
-**Note:** This repository provides **only the code** for extracting the dataset from MIMIC-III and does **not include raw MIMIC data**. To use this project, you must have **access to MIMIC-III v1.4 in BigQuery**. (For details on obtaining access, refer to [https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S0_MIMIC-III%20Data%20Access%20Instructions.ipynb].)  
+**Note:** This repository provides **only the code** for extracting the dataset from MIMIC-III and does **not include raw MIMIC data**. To use this project, you must have **access to MIMIC-III v1.4 in BigQuery**. (For details on obtaining access, refer to [`notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb`](https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S0_MIMIC-III%20Data%20Access%20Instructions.ipynb)  
 
 ## Usage  
 
@@ -14,7 +14,7 @@ To support future studies using this dataset, the project is structured into **t
 
 ### **Section 0: Verify MIMIC-III Dataset Access**  
 
-If you **do not have access**, please refer to [`notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb`](notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb) for detailed setup instructions.  
+If you **do not have access**, please refer to [`notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb`]([notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb](https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S0_MIMIC-III%20Data%20Access%20Instructions.ipynb)) for detailed setup instructions.  
 
 If you **believe you have access** to **MIMIC-III v1.4** via **Google BigQuery**, you can quickly verify it using the following code:  
 
@@ -62,7 +62,7 @@ For a detailed explanation of the cohort extraction process, refer to [`S1_noteb
 
 **Running the Extraction Script**  
 To execute the extraction, use the following code:  
-> **Note:** The first run of the following block may take approximately **7 minutes**. 
+> **Note:** The first run of the following block may take approximately **4 minutes**. 
 
 ```python
 from scripts.cohort_extraction import extract_trauma_cohort_ids
@@ -117,7 +117,7 @@ Among the 1,570 trauma admissions analyzed, 729 admissions had suspected infecti
 
 **Running the Extraction Script**  
 To execute the extraction, use the following code:  
-> **Note**: The first time running the following block may take about **23 minutes**.
+> **Note**: The first time running the following block may take about **31 minutes**.
 
 ```python
 from scripts.sepsis_onset_label_assignment import assign_sepsis_labels
@@ -135,18 +135,32 @@ Loading trauma cohort information...
 Loaded 1570 trauma patients.
 
 --------------Blood Culture Events-------------------
-Loading blood culture events...
-Loaded 8821 records for 1037 unique patients.
+Extracting blood culture events...
+Saved trauma blood culture events to /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/trauma_blood_cx_events.csv
+TOTAL 8821 trauma blood culture events for 1037 trauma patients
+Extraction completed in 14.61 seconds.
 After processing (drop duplicates), 3826 unique records remain.
 
 --------------Antibiotic Events----------------------
-Loading antibiotic events...
-Loaded 2780 records for 1006 unique patients.
+Extracting antibiotic events...
+Included 154834 qualified IV antibiotic samples
+and
+Included 3380 qualified oral antibiotic samples
+TOTAL 9999 antibiotic samples for 1239 trauma patients
+#of qualifying antibiotic order entries:  9859
+Drop 63 noise abx records s.t. startdate>enddate
+#of qualifying antibiotic event: (4886, 7)
+After dropped 1st day antibiotic events: (4206, 8)
+After filtering the duration criteria: (2780, 9)
+Saved clean, well-organized, and qualified antibiotic events to /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/trauma_abx_event.csv
+Extraction completed in 97.80 seconds.
 After processing (drop duplicates), 2039 unique records remain.
 
 --------------SOFA Scores----------------------------
-Loading SOFA scores...
-Loaded 433825 records for 1570 unique patients.
+Calculating SOFA scores...
+Total 433825 SOFA samples for 1570 trauma patients.
+Saved SOFA score for trauma patients to /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/trauma_sofa_score.csv.
+Calculation completed in 1730.32 seconds.
 After processing, 433825 unique records remain.
 
 
@@ -157,10 +171,14 @@ Number of trauma patients: 1570
 Number of infections: 729.0
 Number of sepsis cases: 535.0
 
-Display descriptive statistics for onset day
-![Sepsis Onset Day Distribution](supplementary/TimingofSepsis_cx.png)
 Saving sepsis label information at /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/sepsis_label.csv
 ```
+
+```
+Display descriptive statistics for the onset day
+```
+![Sepsis Onset Day Distribution](https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/supplementary/TimingofSepsis_cx.png)
+
 
 ### **Section 3: Generate Dataset**  
 
@@ -176,7 +194,7 @@ Each row represents a **nighttime instance** and includes patient identifiers (`
 
 **Running the Extraction Script**  
 To execute the extraction, use the following code:  
-<!--> **Note**: The first time running the following block may take about ** xx minutes**.-->
+> **Note**: The first time running the following block may take about ** 23 minutes**.
 ```python
 from scripts.early_sepsis_onset_detection_setup import dataset_construction
 
@@ -184,10 +202,28 @@ from scripts.early_sepsis_onset_detection_setup import dataset_construction
 data_with_nan_df, data_wo_nan_df = dataset_construction(project_path_obj, PROJECT_ID, is_report=True)
 
 ```
-<!--**Expected Output:**-->
-<!--```markdown-->
-<!---->
-<!--```-->
+**Expected Output:**
+```markdown
+Dataset: N dataset | Shape: (10565, 7) | Unique Patients (hadm_id): 1536  
+
+Fold    Total Instances    Positive Instances    Negative Instances    Imbalance Ratio  
+0       2183              90                    2093                  0.041228  
+1       2053              89                    1964                  0.043351  
+2       2025              90                    1935                  0.044444  
+3       1990              91                    1899                  0.045729  
+4       2129              90                    2039                  0.042273  
+Total   10380             450                   9930                  0.043353  
+
+Dataset: S dataset | Shape: (6340, 7) | Unique Patients (hadm_id): 1165  
+
+Fold    Total Instances    Positive Instances    Negative Instances    Imbalance Ratio  
+0       1252              69                    1183                  0.055112  
+1       1262              71                    1191                  0.056260  
+2       1313              76                    1237                  0.057883  
+3       1132              66                    1066                  0.058304  
+4       1272              72                    1200                  0.056604  
+Total   6231              354                   5877                  0.056813  
+```
 
 # Project Organization
 
