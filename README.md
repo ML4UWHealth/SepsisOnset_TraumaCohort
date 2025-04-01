@@ -1,8 +1,8 @@
-# Rare Event Dataset: Early PostTraumatic Sepsis Detection
+# Rare Event Dataset: Early Posttraumatic Sepsis Detection
 
-This repository provides a **standardized dataset for early sepsis onset detection in critically ill trauma patients**, extracted from **MIMIC-III v1.4**. The dataset supports research on **rare event detection** and **machine learning applications in clinical settings** by offering a **well-defined trauma cohort, structured post-trumma sepsis onset labels, and a deployable detection setup**.  
+This repository provides a **standardized dataset for early sepsis onset detection in critically ill trauma patients**, extracted from **MIMIC-III v1.4**. The dataset supports research on **rare event detection** and **machine learning applications in clinical settings** by offering a **well-defined trauma cohort, structured post-trauma sepsis onset labels, and a deployable detection setup**.  
   
-The implementation is **primarily in Python**, with some SQL queries, and follows the methodology described in the paper *"Rare Event Early Detection: Sepsis Onset for Critically Ill Trauma Patients."* This project leverages **Google BigQuery** for efficient access and management of the MIMIC-III database.  
+The implementation is **primarily in Python**, with some SQL queries, and follows the methodology described in the paper *"Rare Event Early Detection: Sepsis Onset for Critically Ill Trauma Patients."* This project leverages **Google BigQuery** for efficient access and management of the MIMIC-III database. Currently, the repository is designed to run on Google Colab and does not support local execution, though local support may be added in the future.
 
 **Note:** This repository provides **only the code** for extracting the dataset from MIMIC-III and does **not include raw MIMIC data**. To use this project, you must have **access to MIMIC-III v1.4 in BigQuery**. (For details on obtaining access, refer to [`notebooks/S0_MIMIC-III_Data_Access_Instructions.ipynb`](https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S0_MIMIC-III%20Data%20Access%20Instructions.ipynb)  
 
@@ -89,7 +89,7 @@ Save to:  /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/tr
 ```
 
 
-### Section2: Assign Labels: Post-Trauma Sepsis Labels  
+### Section 2: Assign Labels: Post-Trauma Sepsis Labels  
 This section calls the **core function** for **sepsis label assignment**, integrating essential criteria to accurately assign sepsis labels and timestamp **sepsis onset** in the critically ill trauma cohort from **MIMIC-III v1.4**. The methodology is detailed in **Section 3.2, "Post-Trauma Sepsis Definition,"** of our paper. For implementation details, refer to [`notebooks/S2_Sepsis_Onset_Label_Assignment.ipynb`](https://github.com/ML4UWHealth/SepsisOnset_TraumaCohort/blob/main/notebooks/S2_Sepsis_Onset_Label_Assignment.ipynb).  
 
 ### Step 1: Preprocess Pertinent Features
