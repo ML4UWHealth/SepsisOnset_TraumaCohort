@@ -204,25 +204,25 @@ data_with_nan_df, data_wo_nan_df = dataset_construction(project_path_obj, PROJEC
 ```
 **Expected Output:**
 ```markdown
-Dataset: N dataset | Shape: (10565, 7) | Unique Patients (hadm_id): 1536  
+Dataset: N dataset | Shape: (8740, 8) | Unique Patients (hadm_id): 1532  
 
 Fold    Total Instances    Positive Instances    Negative Instances    Imbalance Ratio  
-0       2183              90                    2093                  0.041228  
-1       2053              89                    1964                  0.043351  
-2       2025              90                    1935                  0.044444  
-3       1990              91                    1899                  0.045729  
-4       2129              90                    2039                  0.042273  
-Total   10380             450                   9930                  0.043353  
+0       1836               90                   1746                  0.049020  
+1       1735               89                   1646                  0.051297  
+2       1681               90                   1591                  0.053540  
+3       1724               90                   1634                  0.052204  
+4       1764               90                   1674                  0.051020  
+Total   8740               449                  8291                  0.051373  
 
-Dataset: S dataset | Shape: (6340, 7) | Unique Patients (hadm_id): 1165  
+Dataset: S dataset | Shape: (7817, 8) | Unique Patients (hadm_id): 1498  
 
 Fold    Total Instances    Positive Instances    Negative Instances    Imbalance Ratio  
-0       1252              69                    1183                  0.055112  
-1       1262              71                    1191                  0.056260  
-2       1313              76                    1237                  0.057883  
-3       1132              66                    1066                  0.058304  
-4       1272              72                    1200                  0.056604  
-Total   6231              354                   5877                  0.056813  
+0       1658               89                   1569                  0.053679  
+1       1555               82                   1473                  0.052733  
+2       1495               82                   1413                  0.054849  
+3       1521               83                   1438                  0.054569  
+4       1588               84                   1504                  0.052897  
+Total   7817               420                  7397                  0.053729  
 ```
 
 # Project Organization
