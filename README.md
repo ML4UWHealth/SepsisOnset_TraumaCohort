@@ -85,7 +85,7 @@ After Hospital Length of Stay >= 48h Filter: 4977
 Mechanical Ventilation Day Filter: 
     2271 (Not Intubated) + 1136 (Intubated < 3 days)
 Final Cohort Size: 1570
-Save to:  /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/trauma_cohort_info.csv
+Save to: data/processed/trauma_cohort_info.csv
 ```
 
 
@@ -106,6 +106,9 @@ Post-Trauma Sepsis is defined based on preprocessed data following Sepsis-3 cons
 - **Qualifying Culture Timestamp**: Must be for a qualifying blood culture's chart time.
 - **Suspected Infection**: Identified by blood culture records (specifically chart time) within a 5-day window of qualifying antibiotic initiation.
 - **Organ Dysfunction**: Identified by a **2-point increase** in the SOFA score within a 7-day window (-3 days, day of, +3 days) relative to the culture chart time.
+
+![Pipeline Diagram](supplementary/sepsisdefination_timeline.png "Timeline visualization of post-trauma sepsis onset assignment criteria")
+
 
 ### Step 3: Post-Process Sepsis Candidates
 Finally, we assign sepsis labels and onset timestamps as follows:
@@ -136,7 +139,7 @@ Loaded 1570 trauma patients.
 
 --------------Blood Culture Events-------------------
 Extracting blood culture events...
-Saved trauma blood culture events to /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/trauma_blood_cx_events.csv
+Saved trauma blood culture events to data/processed/trauma_blood_cx_events.csv
 TOTAL 8821 trauma blood culture events for 1037 trauma patients
 Extraction completed in 14.61 seconds.
 After processing (drop duplicates), 3826 unique records remain.
@@ -152,14 +155,14 @@ Drop 63 noise abx records s.t. startdate>enddate
 #of qualifying antibiotic event: (4886, 7)
 After dropped 1st day antibiotic events: (4206, 8)
 After filtering the duration criteria: (2780, 9)
-Saved clean, well-organized, and qualified antibiotic events to /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/trauma_abx_event.csv
+Saved clean, well-organized, and qualified antibiotic events to data/processed/trauma_abx_event.csv
 Extraction completed in 97.80 seconds.
 After processing (drop duplicates), 2039 unique records remain.
 
 --------------SOFA Scores----------------------------
 Calculating SOFA scores...
 Total 433825 SOFA samples for 1570 trauma patients.
-Saved SOFA score for trauma patients to /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/trauma_sofa_score.csv.
+Saved SOFA score for trauma patients to data/processed/trauma_sofa_score.csv.
 Calculation completed in 1730.32 seconds.
 After processing, 433825 unique records remain.
 
@@ -171,7 +174,7 @@ Number of trauma patients: 1570
 Number of infections: 729.0
 Number of sepsis cases: 535.0
 
-Saving sepsis label information at /content/drive/MyDrive/REED/SepsisOnset_TraumaCohort/data/processed/sepsis_label.csv
+Saving sepsis label information at data/processed/sepsis_label.csv
 ```
 
 ```
@@ -204,25 +207,24 @@ data_with_nan_df, data_wo_nan_df = dataset_construction(project_path_obj, PROJEC
 ```
 **Expected Output:**
 ```markdown
-Dataset: N dataset | Shape: (8740, 8) | Unique Patients (hadm_id): 1532  
+Dataset: N dataset | Shape: (8977, 9) | Unique Patients (hadm_id): 1535
+Fold    Total_Instances Positive_Instances  Negative_Instances  Imbalance_Ratio
+0       1788            92                  1696                0.051454
+1       1813            90                  1723                0.049641
+2       1825            94                  1731                0.051507
+3       1740            92                  1648                0.052874
+4       1811            87                  1724                0.048040
+Total   8977            455                 8522                0.050685
 
-Fold    Total Instances    Positive Instances    Negative Instances    Imbalance Ratio  
-0       1836               90                   1746                  0.049020  
-1       1735               89                   1646                  0.051297  
-2       1681               90                   1591                  0.053540  
-3       1724               90                   1634                  0.052204  
-4       1764               90                   1674                  0.051020  
-Total   8740               449                  8291                  0.051373  
+Dataset: S dataset | Shape: (8759, 9) | Unique Patients (hadm_id): 1522
+Fold    Total_Instances Positive_Instances  Negative_Instances  Imbalance_Ratio
+0       1735            88                  1647                0.050720
+1       1763            87                  1676                0.049348
+2       1797            93                  1704                0.051753
+3       1711            90                  1621                0.052601
+4       1753            82                  1671                0.046777
+Total   8759            440                 8319                0.050234
 
-Dataset: S dataset | Shape: (7817, 8) | Unique Patients (hadm_id): 1498  
-
-Fold    Total Instances    Positive Instances    Negative Instances    Imbalance Ratio  
-0       1658               89                   1569                  0.053679  
-1       1555               82                   1473                  0.052733  
-2       1495               82                   1413                  0.054849  
-3       1521               83                   1438                  0.054569  
-4       1588               84                   1504                  0.052897  
-Total   7817               420                  7397                  0.053729  
 ```
 
 # Project Organization
@@ -262,4 +264,4 @@ Total   7817               420                  7397                  0.053729
     └── supplementary/
         ├── qualified_traumatic_ICD9_Ecodes.xlsx <- Qualifying ICD-9 E codes for the trauma cohort.
         ├── TimingofSepsis_cx.png                <- Graph illustrating the timing of sepsis onset in the trauma cohort.
-
+        ├── sepsisdefination_timeline.png        <- Graph illustrating the definition of Posttraumatic Sepsis.
