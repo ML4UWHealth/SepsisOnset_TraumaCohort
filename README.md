@@ -265,3 +265,17 @@ Total   8759            440                 8319                0.050234
         ├── qualified_traumatic_ICD9_Ecodes.xlsx <- Qualifying ICD-9 E codes for the trauma cohort.
         ├── TimingofSepsis_cx.png                <- Graph illustrating the timing of sepsis onset in the trauma cohort.
         ├── sepsisdefination_timeline.png        <- Graph illustrating the definition of Posttraumatic Sepsis.
+
+# Citation
+
+If you use this code or dataset in your research, please cite our paper:
+
+```bibtex
+@article{jin2025rare,
+  title   = {Rare Event Early Detection: A Dataset of Sepsis Onset for Critically Ill Trauma Patients},
+  author  = {Jin, Yin and Stewart, Tucker R. and Zhou, Deyi and Gupta, Chhavi and
+             Nema, Arjita and Brakenridge, Scott C. and O'Keefe, Grant E. and Hu, Juhua},
+  journal = {arXiv preprint},
+  year    = {2025}
+}
+
