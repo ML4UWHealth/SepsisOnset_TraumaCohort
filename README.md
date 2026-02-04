@@ -271,11 +271,14 @@ Total   8759            440                 8319                0.050234
 If you use this code or dataset in your research, please cite our paper:
 
 ```bibtex
-@article{jin2025rare,
-  title   = {Rare Event Early Detection: A Dataset of Sepsis Onset for Critically Ill Trauma Patients},
-  author  = {Jin, Yin and Stewart, Tucker R. and Zhou, Deyi and Gupta, Chhavi and
-             Nema, Arjita and Brakenridge, Scott C. and O'Keefe, Grant E. and Hu, Juhua},
-  journal = {arXiv preprint},
-  year    = {2025}
+@misc{jin2026rareeventearlydetection,
+      title={Rare Event Early Detection: A Dataset of Sepsis Onset for Critically Ill Trauma Patients}, 
+      author={Yin Jin and Tucker R. Stewart and Deyi Zhou and Chhavi Gupta and Arjita Nema and Scott C. Brakenridge and Grant E. O'Keefe and Juhua Hu},
+      year={2026},
+      eprint={2602.02930},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2602.02930}, 
 }
+```
 
